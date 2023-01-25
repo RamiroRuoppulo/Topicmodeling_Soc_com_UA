@@ -1,0 +1,664 @@
+from bs4 import BeautifulSoup
+import requests
+import pandas as pd
+import re
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+
+session = requests.Session()
+retry = Retry(connect=3, backoff_factor=0.5)
+adapter = HTTPAdapter(max_retries=retry)
+session.mount('http://', adapter)
+session.mount('http://', adapter)
+
+
+### Obtecion del texto de las noticias ###
+
+# Diario Pagina 12 #
+
+links_pag12 = pd.read_csv("links_pag12.csv")#Recuperamos el dataframe donde estan los links
+links_pag12 = links_pag12.iloc[:, 2]#Me quedo con la columna donde solamente estan los links
+links_pag12 = links_pag12.tolist()#Convertimos la columna a lista
+
+
+texto_pag12 = []
+texto = []
+links_fallidos = []
+
+for i in range(0, len(links_pag12)):
+    try:
+        response = session.get(links_pag12[i])
+        soup = BeautifulSoup(response.text, "html.parser")
+        elementos_texto = soup.find("div", {"class" : "article-main-content article-text"})
+        elementos_p = elementos_texto.find_all("p")
+        for y in elementos_p:
+            k = y.get_text(" ", strip=True)
+            texto.append(k)
+        texto_pag12.append(" ".join(texto))
+        len(texto_pag12)
+        texto = []
+    except:
+        links_fallidos.append(links_pag12[i])
+
+
+
+
+texto_pag12_2 = []
+links_fallidos_2 = []
+texto =[]
+
+for i in range(0, len(links_fallidos)):
+    try:
+        response = session.get(links_fallidos[i])
+        soup = BeautifulSoup(response.text, "html.parser")
+        elementos_texto = soup.find("div", {"class" : "article-main-content article-text no-main-image"})
+        elementos_p = elementos_texto.find_all("p")
+        for y in elementos_p:
+            k = y.get_text(" ", strip=True)
+            texto.append(k)
+        texto_pag12_2.append(" ".join(texto))
+        len(texto_pag12_2)
+        texto = []
+    except:
+        links_fallidos_2.append(links_fallidos[i])
+
+
+
+id = range(len(texto_pag12))
+
+texto_pag12 = pd.DataFrame(list(zip(id, texto_pag12)),
+                                columns= ["id", "texto",])
+
+texto_pag12.to_csv("texto_pag12.csv", encoding="utf-8")
+
+
+
+# Diario Ambito #
+
+links_ambito = pd.read_csv("links_ambito.csv")
+links_ambito = links_ambito.iloc[:, 2]
+links_ambito = links_ambito.tolist()
+
+
+texto_ambito = []
+links_fallidos = []
+texto = []
+
+for i in range(0, len(links_ambito)):
+    try:
+        response = session.get(links_ambito[i])
+        soup = BeautifulSoup(response.text, "html.parser")
+        elementos_texto = soup.find_all("section", {"class" : "body-content note-body content-protected-false"}) 
+        for y in elementos_texto:
+            k = y.get_text(" ", strip=True)
+            texto.append(k)
+        texto_ambito.append(" ".join(texto))
+        len(texto_ambito)
+        texto = []
+    except:
+      links_fallidos.append(links_ambito[i])
+
+
+id = range(len(texto_ambito))
+
+data_ambito = pd.DataFrame(list(zip(id, texto_ambito)),
+                                columns= ["id", "texto"])
+
+data_ambito.to_csv("texto_ambito.csv", encoding="utf-8")
+ 
+# Diario Clarín #
+
+links_clarin = pd.read_csv("links_clarin.csv")
+links_clarin = links_clarin.iloc[:, 2]
+links_clarin = links_clarin.tolist()
+
+
+texto_clarin= []
+links_fallidos = []
+
+for i in range(0, len(links_clarin)):
+    try:
+        response = session.get(links_clarin[i])
+        soup = BeautifulSoup(response.text, "html.parser")
+        elementos_texto = soup.find("article", {"class" : "entry-body check-space"})
+        texto_clarin.append(elementos_texto.get_text(" ", strip=True))
+        len(texto_clarin)
+    except:
+      links_fallidos.append(links_clarin[i])
+
+
+
+texto_elle = []
+texto = []
+fallidos_2 = []
+
+for i in range(0, len(links_fallidos)):
+    try:
+        response = session.get(links_fallidos[i])
+        soup = BeautifulSoup(response.text, "html.parser")
+        elementos_texto = soup.find("div", {"class" : "article"})
+        elementos_p = elementos_texto.find_all("p")
+        for y in elementos_p:
+            k = y.get_text(" ", strip=True)
+            texto.append(k)
+        texto_elle.append(" ".join(texto))
+        len(texto_elle)
+        texto = []
+    except:
+        fallidos_2.append(links_fallidos[i])
+
+
+texto_clarin = texto_clarin + texto_elle
+
+
+id = range(len(texto_clarin))
+
+data_clarin = pd.DataFrame(list(zip(id, texto_clarin)),
+                                columns= ["id", "texto"])
+
+data_clarin.to_csv("texto_clarin.csv", encoding="utf-8")
+
+# Diario Telam #
+
+links_telam = pd.read_csv("links_telam.csv")
+links_telam = links_telam.iloc[:, 2]
+links_telam = links_telam.tolist()
+
+
+texto_telam = []
+links_fallidos = []
+
+for i in range(0, len(links_telam)):
+    try:
+        response = session.get(links_telam[i])
+        soup = BeautifulSoup(response.text, "html.parser")
+        elementos_texto = soup.find("div", {"class" : "paragraph"})
+        texto_telam.append(elementos_texto.get_text(" ", strip=True))
+        len(texto_telam)
+    except:
+      links_fallidos.append(links_telam[i])
+
+
+id = range(len(texto_telam))
+
+texto_telam = pd.DataFrame(list(zip(id, texto_telam)),
+                                columns= ["id", "texto",])
+
+texto_telam.to_csv("texto_telam.csv", encoding="utf-8")
+
+
+
+# Diario Perfil #
+links_perfil = pd.read_csv("links_perfil.csv")
+links_perfil = links_perfil.iloc[:, 2]
+links_perfil = links_perfil.tolist()
+
+
+link = []
+
+for i in range(0, len(links_perfil)):
+    x = re.findall("(https://442.perfil.com\S+)", links_perfil[i])
+    link.append(x)
+
+re.findall("(https://www.perfil.com\S+)", links_perfil[1])
+
+link = list(filter(bool, link))
+
+
+perfil = []
+
+for i in range(0, len(link)):
+    x = str(link[i])[1:-1]
+    b =str(x)[1:-1]
+    perfil.append(b)
+
+
+texto_perfil = []
+texto = []
+links_fallidos = []
+
+for i in range(0, len(perfil)):
+    try:
+        response = session.get(perfil[i])
+        soup = BeautifulSoup(response.text, "html.parser")
+        elementos_texto = soup.find("div", {"class" : "news-body"})
+        elementos_p = elementos_texto.find_all("p")
+        for y in elementos_p:
+            k = y.get_text(" ", strip=True)
+            texto.append(k)
+        texto_perfil.append(" ".join(texto))
+        len(texto_perfil)
+        texto = []
+    except:
+        links_fallidos.append(perfil[i])
+
+
+texto_limpio = []
+
+for i in texto_perfil:
+    x = i.replace("\xa0"," ")
+    texto_limpio.append(x)
+
+
+
+texto_perfil = pd.read_csv("texto_perfil.csv", encoding="utf-8")
+texto_perfil = texto_perfil.iloc[:, 2]
+texto_perfil = texto_perfil.tolist()
+
+
+
+### 442.perfil.com
+
+perfil442 = []
+
+for i in range(0, len(links_perfil)):
+    x = re.findall("(https://442.perfil.com\S+)", links_perfil[i])
+    perfil442.append(x)
+
+
+
+perfil442 = list(filter(bool, perfil442))
+
+
+perfil442_limpio = []
+
+for i in range(0, len(perfil442)):
+    x = str(perfil442[i])[1:-1]
+    b =str(x)[1:-1]
+    perfil442_limpio.append(b)
+
+
+
+texto_procesado_442 = []
+texto_442 = []
+
+for i in range(0 , len(perfil442_limpio)):
+    try:
+        response = session.get(perfil442_limpio[i])
+        soup = BeautifulSoup(response.text, "html.parser")
+        elementos_texto = soup.find("div", {"class" : "news-content"})
+        elementos_p = elementos_texto.find_all("p")
+        for y in elementos_p:
+            k = y.get_text(" ", strip=True)
+            texto_442.append(k)
+        texto_procesado_442.append(" ".join(texto_442))
+        len(texto_procesado_442)
+        texto_442 = []
+    except:
+        links_fallidos.append(perfil442_limpio[i])
+
+
+texto_limpio_442 = []
+
+for i in texto_procesado_442:
+    x = i.replace("\xa0"," ")
+    texto_limpio_442.append(x)
+
+### Caras perfil
+
+caras = []
+
+for i in range(0, len(links_perfil)):
+    x = re.findall("(https://caras.perfil.com\S+)", links_perfil[i])
+    caras.append(x)
+
+
+caras = list(filter(bool, caras))
+
+
+caras_limpio = []
+
+for i in range(0, len(caras)):
+    x = str(caras[i])[1:-1]
+    b =str(x)[1:-1]
+    caras_limpio.append(b)
+
+
+
+texto_procesado_caras = []
+texto_caras = []
+
+for i in range(0 , len(caras_limpio)):
+    try:
+        response = session.get(caras_limpio[i])
+        soup = BeautifulSoup(response.text, "html.parser")
+        elementos_texto = soup.find("div", {"class" : "news-content"})
+        elementos_p = elementos_texto.find_all("p")
+        for y in elementos_p:
+            k = y.get_text(" ", strip=True)
+            texto_caras.append(k)
+        texto_procesado_caras.append(" ".join(texto_caras))
+        len(texto_procesado_caras)
+        texto_caras = []
+    except:
+        links_fallidos.append(caras_limpio[i])
+
+
+texto_limpio_caras = []
+
+for i in texto_procesado_caras:
+    x = i.replace("\xa0"," ")
+    texto_limpio_caras.append(x)
+
+
+
+
+### Radio perfil
+
+radioperfil = []
+
+for i in range(0, len(links_perfil)):
+    x = re.findall("(https://radio.perfil.com\S+)", links_perfil[i])
+    radioperfil.append(x)
+
+radioperfil = list(filter(bool, radioperfil))
+
+
+radioperfil_limpio = []
+
+for i in range(0, len(radioperfil)):
+    x = str(radioperfil[i])[1:-1]
+    b =str(x)[1:-1]
+    radioperfil_limpio.append(b)
+
+
+
+texto_procesado_radioperfil = []
+texto_radioperfil = []
+
+for i in range(0 , len(radioperfil_limpio)):
+    try:
+        response = session.get(radioperfil_limpio[i])
+        soup = BeautifulSoup(response.text, "html.parser")
+        elementos_texto = soup.find("article", {"class" : "new-body"}) 
+        elementos_p = elementos_texto.find_all("p")
+        for y in elementos_p:
+            k = y.get_text(" ", strip=True)
+            texto_radioperfil.append(k)
+        texto_procesado_radioperfil.append(" ".join(texto_radioperfil))
+        len(texto_procesado_radioperfil)
+        texto_radioperfil = []
+    except:
+        links_fallidos.append(radioperfil_limpio[i])
+
+texto_limpio_radioperfil = []
+
+for i in texto_procesado_radioperfil:
+    x = i.replace("\xa0"," ")
+    texto_limpio_radioperfil.append(x)
+
+
+### Weekend perfil
+
+Weekend = []
+
+for i in links_perfil:
+    x = re.findall("(https://weekend.perfil.com\S+)", i)
+    Weekend.append(x)
+
+Weekend = list(filter(bool, Weekend))
+
+
+Weekend_limpio = []
+
+for i in range(0, len(Weekend)):
+    x = str(Weekend[i])[1:-1]
+    b =str(x)[1:-1]
+    Weekend_limpio.append(b)
+
+
+
+texto_procesado_Weekend = []
+texto_Weekend = []
+
+for i in range(0 , len(Weekend_limpio)):
+    try:
+        response = session.get(Weekend_limpio[i])
+        soup = BeautifulSoup(response.text, "html.parser")
+        elementos_texto = soup.find("article", {"class" : "new-body mt-3"}) 
+        elementos_p = elementos_texto.find_all("p")
+        for y in elementos_p:
+            k = y.get_text(" ", strip=True)
+            texto_Weekend.append(k)
+        texto_procesado_Weekend.append(" ".join(texto_Weekend))
+        len(texto_procesado_Weekend)
+        texto_Weekend = []
+    except:
+        links_fallidos.append(Weekend_limpio[i])
+
+
+texto_limpio_Weekend = []
+
+for i in texto_procesado_Weekend:
+    x = i.replace("\xa0"," ")
+    texto_limpio_Weekend.append(x)
+
+### Noticias perfil
+
+noticias_perfil = []
+
+for i in links_perfil:
+    x = re.findall("(https://noticias.perfil.com\S+)", i)
+    noticias_perfil.append(x)
+
+noticias_perfil = list(filter(bool, noticias_perfil))
+
+noticias_perfil_limpio = []
+
+for i in range(0, len(noticias_perfil)):
+    x = str(noticias_perfil[i])[1:-1]
+    b =str(x)[1:-1]
+    noticias_perfil_limpio.append(b)
+
+
+
+texto_procesado_noticiasperfil = []
+texto_noticiasperfil = []
+
+for i in range(0 , len(noticias_perfil_limpio)):
+    try:
+        response = session.get(noticias_perfil_limpio[i])
+        soup = BeautifulSoup(response.text, "html.parser")
+        elementos_texto = soup.find("article", {"class" : "new-body"}) 
+        elementos_p = elementos_texto.find_all("p")
+        for y in elementos_p:
+            k = y.get_text(" ", strip=True)
+            texto_noticiasperfil.append(k)
+        texto_procesado_noticiasperfil.append(" ".join(texto_noticiasperfil))
+        len(texto_procesado_noticiasperfil)
+        texto_noticiasperfil = []
+    except:
+        links_fallidos.append(noticias_perfil_limpio[i])
+
+
+texto_limpio_noticiasperfil = []
+
+for i in texto_procesado_noticiasperfil:
+    x = i.replace("\xa0"," ")
+    texto_limpio_noticiasperfil.append(x)
+
+
+### Exitoina perfil
+
+exitoina = []
+
+for i in links_perfil:
+    x = re.findall("(https://exitoina.perfil.com\S+)", i)
+    exitoina.append(x)
+
+exitoina = list(filter(bool, exitoina))
+
+exitoina_limpio = []
+
+for i in range(0, len(exitoina)):
+    x = str(exitoina[i])[1:-1]
+    b =str(x)[1:-1]
+    exitoina_limpio.append(b)
+
+
+texto_procesado_exitoina = []
+texto_exitoina = []
+
+for i in range(0 , len(exitoina_limpio)):
+    try:
+        response = session.get(exitoina_limpio[i])
+        soup = BeautifulSoup(response.text, "html.parser")
+        elementos_texto = soup.find("div", {"class" : "news-body"}) 
+        elementos_p = elementos_texto.find_all("p")
+        for y in elementos_p:
+            k = y.get_text(" ", strip=True)
+            texto_exitoina.append(k)
+        texto_procesado_exitoina.append(" ".join(texto_exitoina))
+        len(texto_procesado_exitoina)
+        texto_exitoina = []
+    except:
+        links_fallidos.append(exitoina_limpio[i])
+
+
+texto_limpio_exitoina = []
+
+for i in texto_procesado_exitoina:
+    x = i.replace("\xa0"," ")
+    texto_limpio_exitoina.append(x)
+
+
+texto_exitoina = []
+
+for i in texto_limpio_exitoina:
+    x = i.replace("Compartí esta nota"," ")
+    texto_exitoina.append(x)
+
+
+### Rouge perfil
+
+rouge = []
+
+for i in links_perfil:
+    x = re.findall("(https://rouge.perfil.com\S+)", i)
+    rouge.append(x)
+
+rouge = list(filter(bool, rouge))
+
+rouge_limpio = []
+
+for i in range(0, len(rouge)):
+    x = str(rouge[i])[1:-1]
+    b =str(x)[1:-1]
+    rouge_limpio.append(b)
+
+
+texto_procesado_rouge = []
+texto_rouge = []
+
+for i in range(0 , len(rouge_limpio)):
+    try:
+        response = session.get(rouge_limpio[i])
+        soup = BeautifulSoup(response.text, "html.parser")
+        elementos_texto = soup.find("article", {"class" : "new-body mt-3"}) 
+        elementos_p = elementos_texto.find_all("p")
+        for y in elementos_p:
+            k = y.get_text(" ", strip=True)
+            texto_rouge.append(k)
+        texto_procesado_rouge.append(" ".join(texto_rouge))
+        len(texto_procesado_rouge)
+        texto_rouge = []
+    except:
+        links_fallidos.append(rouge_limpio[i])
+
+
+texto_limpio_rouge = []
+
+for i in texto_procesado_rouge:
+    x = i.replace("\xa0"," ")
+    texto_limpio_rouge.append(x)
+
+
+
+### Marieclaire perfil
+
+marieclaire = []
+
+for i in links_perfil:
+    x = re.findall("(https://marieclaire.perfil.com\S+)", i)
+    marieclaire.append(x)
+
+marieclaire = list(filter(bool, marieclaire))
+
+marieclaire_limpio = []
+
+for i in range(0, len(marieclaire)):
+    x = str(marieclaire[i])[1:-1]
+    b =str(x)[1:-1]
+    marieclaire_limpio.append(b)
+
+
+texto_procesado_marieclaire = []
+texto_marieclaire = []
+
+for i in range(0 , len(marieclaire_limpio)):
+    try:
+        response = session.get(marieclaire_limpio[i])
+        soup = BeautifulSoup(response.text, "html.parser")
+        elementos_texto = soup.find("article", {"class" : "new-body mt-3"}) 
+        elementos_p = elementos_texto.find_all("p")
+        for y in elementos_p:
+            k = y.get_text(" ", strip=True)
+            texto_marieclaire.append(k)
+        texto_procesado_marieclaire.append(" ".join(texto_marieclaire))
+        len(texto_procesado_marieclaire)
+        texto_marieclaire = []
+    except:
+        links_fallidos.append(marieclaire_limpio[i])
+
+
+texto_limpio_marieclaire = []
+
+for i in texto_procesado_marieclaire:
+    x = i.replace("\xa0"," ")
+    texto_limpio_marieclaire.append(x)
+
+
+### Parabrisas
+
+parabrisas = []
+
+for i in links_perfil:
+    x = re.findall("(https://parabrisas.perfil.com\S+)", i)
+    parabrisas.append(x)
+
+parabrisas = list(filter(bool, parabrisas))
+
+parabrisas_limpio = []
+
+for i in range(0, len(parabrisas)):
+    x = str(parabrisas[i])[1:-1]
+    b =str(x)[1:-1]
+    parabrisas_limpio.append(b)
+
+
+texto_procesado_parabrisas = []
+texto_parabrisas = []
+
+for i in range(0 , len(parabrisas_limpio)):
+    try:
+        response = session.get(parabrisas_limpio[i])
+        soup = BeautifulSoup(response.text, "html.parser")
+        elementos_texto = soup.find("article", {"class" : "new-body mt-3"}) 
+        elementos_p = elementos_texto.find_all("p")
+        for y in elementos_p:
+            k = y.get_text(" ", strip=True)
+            texto_parabrisas.append(k)
+        texto_procesado_parabrisas.append(" ".join(texto_parabrisas))
+        len(texto_procesado_parabrisas)
+        texto_parabrisas = []
+    except:
+        links_fallidos.append(parabrisas_limpio[i])
+
+
+texto_limpio_parabrisas = []
+
+for i in texto_procesado_parabrisas:
+    x = i.replace("\xa0"," ")
+    texto_limpio_parabrisas.append(x)
+
