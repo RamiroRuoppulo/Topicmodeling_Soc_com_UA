@@ -1,0 +1,166 @@
+from gdeltdoc import Filters, near, repeat, GdeltDoc
+import re, numpy as np, pandas as pd
+
+
+gd = GdeltDoc()
+
+
+### Diario Telam ###
+
+links_telam = []
+def extraccion(medio):
+    articulos_telam = gd.article_search(medio)
+    for i in articulos_telam.iloc[:, 0]:
+        links_telam.append(i)
+
+
+telam = Filters(
+    start_date = "2022-08-31",
+    end_date = "2022-09-01",
+    country="AR",
+    domain= "telam.com.ar"
+)
+
+
+extraccion(telam)
+len(links_telam)
+
+
+id = range(len(links_telam))
+
+
+data_telam = pd.DataFrame(list(zip(id, links_telam)),
+                                columns= ["id", "links",])
+
+
+data_telam.to_csv("links_telam.csv", encoding="utf-8")
+
+
+
+### Diario Clarin ### 
+
+links_clarin = []
+
+def extraccion(medio):
+    articulos_clarin = gd.article_search(medio)
+    for i in articulos_clarin.iloc[:, 0]:
+        links_clarin.append(i)
+
+
+clarin = Filters(
+    start_date = "2022-08-31",
+    end_date = "2022-09-01",
+    country="AR",
+    domain= "clarin.com")
+
+extraccion(clarin)
+len(links_clarin)
+
+
+id = range(len(links_clarin))
+
+
+data_clarin = pd.DataFrame(list(zip(id, links_clarin)),
+                                columns= ["id", "links",])
+
+
+data_clarin.to_csv("links_clarin.csv", encoding="utf-8")
+
+
+
+### Diario Ambito ###
+
+
+links_ambito = []
+
+def extraccion(medio):
+    articulos_ambito = gd.article_search(medio)
+    for i in articulos_ambito.iloc[:, 0]:
+        links_ambito.append(i)
+
+
+ambito = Filters(
+    start_date = "2022-08-31",
+    end_date = "2022-09-01",
+    country="AR",
+    domain= "ambito.com")
+
+extraccion(ambito)
+len(links_ambito)
+
+
+id = range(len(links_ambito))
+
+
+data_ambito = pd.DataFrame(list(zip(id, links_ambito)),
+                                columns= ["id", "links",])
+
+
+data_ambito.to_csv("links_ambito.csv", encoding="utf-8")
+
+
+
+### Diario Pagina 12 ###
+
+
+links_pag12 = []
+
+
+def extraccion(medio):
+    articulos_pag12 = gd.article_search(medio)
+    for i in articulos_pag12.iloc[:, 0]:
+        links_pag12.append(i)
+
+
+pag12 = Filters(
+    start_date = "2022-08-31",
+    end_date = "2022-09-01",
+    country="AR",
+    domain= "pagina12.com.ar")
+
+
+extraccion(pag12)
+len(links_pag12)
+
+
+id = range(len(links_pag12))
+
+
+data_pag12 = pd.DataFrame(list(zip(id, links_pag12)),
+                                columns= ["id", "links",])
+
+
+data_pag12.to_csv("links_pag12.csv", encoding="utf-8")
+
+
+### Diario Perfil ###
+
+
+links_perfil = []
+
+
+def extraccion(medio):
+    articulos_perfil = gd.article_search(medio)
+    for i in articulos_perfil.iloc[:, 0]:
+        links_perfil.append(i)
+
+
+perfil = Filters(
+    start_date = "2022-08-31",
+    end_date = "2022-09-01",
+    country="AR",
+    domain= "perfil.com")
+
+
+extraccion(perfil)
+len(links_perfil)
+
+
+id = range(len(links_perfil))
+
+
+data_perfil = pd.DataFrame(list(zip(id, links_perfil)),
+                                columns= ["id", "links",])
+
+
+data_perfil.to_csv("links_perfil.csv", encoding="utf-8")
